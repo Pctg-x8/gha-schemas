@@ -1,6 +1,8 @@
 Unofficial Dhall Schema for GitHub Actions
 ---
 
+https://docs.github.com/ja/free-pro-team@latest/actions
+
 ## Usage
 
 ```dhall
