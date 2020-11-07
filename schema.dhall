@@ -10,6 +10,7 @@ let Step =
         , id : Optional Text
         , `if` : Optional Text
         , run : Optional Text
+        , working-directory : Optional Text
         , uses : Optional Text
         , env : Optional (Map Text Text)
         , `with` : Optional (Map Text Text)
@@ -18,6 +19,7 @@ let Step =
         { id = None Text
         , `if` = None Text
         , run = None Text
+        , working-directory = None Text
         , uses = None Text
         , env = None (Map Text Text)
         , `with` = None (Map Text Text)
