@@ -4,6 +4,8 @@ let id = https://prelude.dhall-lang.org/Function/identity
 --- Utility function to make expression-form string(${{ ... }})
 let mkExpression = \(x: Text) -> "\${{ ${x} }}"
 
+let Shell = < bash | pwsh | python | sh | cmd | powershell | Custom : Text >
+
 let Step =
     { Type =
         { name : Text
@@ -14,6 +16,7 @@ let Step =
         , uses : Optional Text
         , env : Optional (Map Text Text)
         , `with` : Optional (Map Text Text)
+        , shell : Optional Shell
         }
     , default =
         { id = None Text
@@ -23,6 +26,7 @@ let Step =
         , uses = None Text
         , env = None (Map Text Text)
         , `with` = None (Map Text Text)
+        , shell = None Shell
         }
     }
 
@@ -85,5 +89,6 @@ in { Workflow
    , runnerPlatformAsText
    , Strategy
    , Step
+   , Shell
    , mkExpression
    } /\ Triggers
