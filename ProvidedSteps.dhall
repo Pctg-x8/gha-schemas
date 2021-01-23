@@ -22,7 +22,7 @@ let checkoutStep =
         GithubActions.Step::{
         , name = "Checking out"
         , uses = Some "actions/checkout@v2"
-        , with =
+        , `with` =
             List/optionalize
               { mapKey : Text, mapValue : Text }
               ( merge
@@ -41,7 +41,7 @@ let uploadArtifactStep =
         GithubActions.Step::{
         , name = "Uploading Artifacts"
         , uses = Some "actions/upload-artifact@v1"
-        , with = Some (toMap params)
+        , `with` = Some (toMap params)
         }
 
 let DownloadArtifactParams =
@@ -66,7 +66,7 @@ let downloadArtifactStep =
         GithubActions.Step::{
         , name = "Downloading Artifacts"
         , uses = Some "actions/download-artifact@v1"
-        , with = Some (makeDownloadArtifactParams params)
+        , `with` = Some (makeDownloadArtifactParams params)
         }
 
 in  { CheckoutParams
