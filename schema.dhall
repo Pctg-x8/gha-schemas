@@ -62,6 +62,7 @@ let Job =
         , `if`: Optional Text
         , outputs : Optional (Map Text Text)
         , steps : List Step.Type
+        , permissions: Optional (Map Text Text)
         }
     , default =
         { name = None Text
@@ -69,6 +70,7 @@ let Job =
         , strategy = None Strategy.Type
         , needs = None (List Text)
         , `if` = None Text
+        , permissions = None (Map Text Text)
         }
     }
 
