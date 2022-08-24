@@ -53,6 +53,31 @@ let Strategy =
         }
     }
 
+let DockerHubCredentials =
+    { Type =
+        { username : Text
+        , password : Text
+        }
+    , default = {=}
+    }
+let Service =
+    { Type =
+        { image : Text
+        , credentials : Optional DockerHubCredentials.Type
+        , env : Optional (Map Text Text)
+        , ports : Optional (List Text)
+        , volumes : Optional (List Text)
+        , options : Optional Text
+        }
+    , default =
+        { credentials = None DockerHubCredentials.Type
+        , env = None (Map Text Text)
+        , ports = None (List Text)
+        , volumes = None (List Text)
+        , options = None Text
+        }
+    }
+
 let Job =
     { Type =
         { name : Optional Text
@@ -63,6 +88,7 @@ let Job =
         , outputs : Optional (Map Text Text)
         , steps : List Step.Type
         , permissions: Optional (Map Text Text)
+        , services : Optional (Map Text Service.Type)
         }
     , default =
         { name = None Text
@@ -71,6 +97,7 @@ let Job =
         , needs = None (List Text)
         , `if` = None Text
         , permissions = None (Map Text Text)
+        , services = None (Map Text Service.Type)
         }
     }
 
@@ -92,5 +119,7 @@ in { Workflow
    , Strategy
    , Step
    , Shell
+   , Service
+   , DockerHubCredentials
    , mkExpression
    } /\ Triggers
