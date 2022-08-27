@@ -6,6 +6,8 @@ let mkExpression = \(x: Text) -> "\${{ ${x} }}"
 
 let Shell = < bash | pwsh | python | sh | cmd | powershell | Custom : Text >
 
+let WithParameterType = <Number : Natural | Text : Text | Boolean : Bool>
+
 let Step =
     { Type =
         { name : Text
@@ -15,7 +17,7 @@ let Step =
         , working-directory : Optional Text
         , uses : Optional Text
         , env : Optional (Map Text Text)
-        , `with` : Optional (Map Text Text)
+        , `with` : Optional (Map Text WithParameterType)
         , shell : Optional Shell
         }
     , default =
@@ -25,7 +27,7 @@ let Step =
         , working-directory = None Text
         , uses = None Text
         , env = None (Map Text Text)
-        , `with` = None (Map Text Text)
+        , `with` = None (Map Text WithParameterType)
         , shell = None Shell
         }
     }
@@ -124,4 +126,5 @@ in { Workflow
    , Service
    , DockerHubCredentials
    , mkExpression
+   , WithParameterType
    } /\ Triggers
