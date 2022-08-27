@@ -24,10 +24,15 @@ let checkoutStep =
         , uses = Some "actions/checkout@v2"
         , `with` =
             List/optionalize
-              { mapKey : Text, mapValue : Text }
+              { mapKey : Text, mapValue : GithubActions.WithParameterType }
               ( merge
-                  { Some = λ(x : Text) → [ { mapKey = "ref", mapValue = x } ]
-                  , None = [] : Map Text Text
+                  { Some =
+                      λ(x : Text) →
+                        [ { mapKey = "ref"
+                          , mapValue = GithubActions.WithParameterType.Text x
+                          }
+                        ]
+                  , None = [] : Map Text GithubActions.WithParameterType
                   }
                   params.ref
               )
@@ -41,7 +46,12 @@ let uploadArtifactStep =
         GithubActions.Step::{
         , name = "Uploading Artifacts"
         , uses = Some "actions/upload-artifact@v1"
-        , `with` = Some (toMap params)
+        , `with` = Some
+            ( toMap
+                { name = GithubActions.WithParameterType.Text params.name
+                , path = GithubActions.WithParameterType.Text params.path
+                }
+            )
         }
 
 let DownloadArtifactParams =
@@ -49,17 +59,17 @@ let DownloadArtifactParams =
 
 let makeDownloadArtifactParams =
       λ(p : DownloadArtifactParams.Type) →
-        let base = toMap { name = p.name }
+        let base = toMap { name = GithubActions.WithParameterType.Text p.name }
 
         let opt_path =
               Opt/fold
                 Text
                 p.path
-                (List (Map/Entry Text Text))
-                (λ(p : Text) → [ { mapKey = "path", mapValue = p } ])
-                ([] : List (Map/Entry Text Text))
+                (List (Map/Entry Text GithubActions.WithParameterType))
+                (λ(p : Text) → [ { mapKey = "path", mapValue = GithubActions.WithParameterType.Text p } ])
+                ([] : List (Map/Entry Text GithubActions.WithParameterType))
 
-        in  List/concat (Map/Entry Text Text) [ base, opt_path ]
+        in  List/concat (Map/Entry Text GithubActions.WithParameterType) [ base, opt_path ]
 
 let downloadArtifactStep =
       λ(params : DownloadArtifactParams.Type) →
