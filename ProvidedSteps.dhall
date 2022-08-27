@@ -1,5 +1,11 @@
 let GithubActions = ./schema.dhall
 
+let PT = GithubActions.WithParameterType
+
+let utils = ./utils.dhall
+
+let convOpt = utils.convOpt
+
 let Map = https://prelude.dhall-lang.org/Map/Type
 
 let List/null = https://prelude.dhall-lang.org/List/null
@@ -10,27 +16,6 @@ let Map/Entry = https://prelude.dhall-lang.org/Map/Entry
 
 let Opt/fold = https://prelude.dhall-lang.org/Optional/fold
 
-let List/optionalize =
-      λ(a : Type) →
-      λ(list : List a) →
-        if List/null a list then None (List a) else Some list
-
-let List/concatWithEntries =
-      List/concat (Map/Entry Text GithubActions.WithParameterType)
-
-let emptyEntry = [] : List (Map/Entry Text GithubActions.WithParameterType)
-
-let convOpt =
-      λ(a : Type) →
-      λ(name : Text) →
-      λ(f : a → GithubActions.WithParameterType) →
-      λ(v : Optional a) →
-        merge
-          { Some = λ(x : a) → [ { mapKey = name, mapValue = f x } ]
-          , None = emptyEntry
-          }
-          v
-
 let CheckoutParams = { Type = { ref : Optional Text }, default.ref = None Text }
 
 let checkoutStep =
@@ -39,14 +24,9 @@ let checkoutStep =
         , name = "Checking out"
         , uses = Some "actions/checkout@v2"
         , `with` =
-            List/optionalize
-              { mapKey : Text, mapValue : GithubActions.WithParameterType }
-              ( convOpt
-                  Text
-                  "ref"
-                  GithubActions.WithParameterType.Text
-                  params.ref
-              )
+            utils.List/optionalize
+              { mapKey : Text, mapValue : PT }
+              (convOpt Text "ref" PT.Text params.ref)
         }
 
 let UploadArtifactParams =
@@ -58,11 +38,7 @@ let uploadArtifactStep =
         , name = "Uploading Artifacts"
         , uses = Some "actions/upload-artifact@v1"
         , `with` = Some
-            ( toMap
-                { name = GithubActions.WithParameterType.Text params.name
-                , path = GithubActions.WithParameterType.Text params.path
-                }
-            )
+            (toMap { name = PT.Text params.name, path = PT.Text params.path })
         }
 
 let DownloadArtifactParams =
@@ -70,12 +46,11 @@ let DownloadArtifactParams =
 
 let makeDownloadArtifactParams =
       λ(p : DownloadArtifactParams.Type) →
-        let base = toMap { name = GithubActions.WithParameterType.Text p.name }
+        let base = toMap { name = PT.Text p.name }
 
-        let opt_path =
-              convOpt Text "path" GithubActions.WithParameterType.Text p.path
+        let opt_path = convOpt Text "path" PT.Text p.path
 
-        in  List/concatWithEntries [ base, opt_path ]
+        in  utils.List/concatWithEntries [ base, opt_path ]
 
 let downloadArtifactStep =
       λ(params : DownloadArtifactParams.Type) →
@@ -113,62 +88,26 @@ let mkCreateReleaseParamMap =
       λ(params : CreateReleaseParams.Type) →
         let base =
               toMap
-                { tag_name =
-                    GithubActions.WithParameterType.Text params.tag_name
-                , release_name =
-                    GithubActions.WithParameterType.Text params.release_name
+                { tag_name = PT.Text params.tag_name
+                , release_name = PT.Text params.release_name
                 }
 
         let body =
               merge
-                { Text =
-                    λ(text : Text) →
-                      toMap { body = GithubActions.WithParameterType.Text text }
-                , Path =
-                    λ(path : Text) →
-                      toMap
-                        { body_path = GithubActions.WithParameterType.Text path
-                        }
+                { Text = λ(text : Text) → toMap { body = PT.Text text }
+                , Path = λ(path : Text) → toMap { body_path = PT.Text path }
                 }
                 params.body
 
-        let draft =
-              convOpt
-                Bool
-                "draft"
-                GithubActions.WithParameterType.Boolean
-                params.draft
-
-        let prerelease =
-              convOpt
-                Bool
-                "prerelease"
-                GithubActions.WithParameterType.Boolean
-                params.prerelease
-
-        let commitish =
-              convOpt
-                Text
-                "commitish"
-                GithubActions.WithParameterType.Text
-                params.commitish
-
-        let owner =
-              convOpt
-                Text
-                "owner"
-                GithubActions.WithParameterType.Text
-                params.owner
-
-        let repo =
-              convOpt
-                Text
-                "repo"
-                GithubActions.WithParameterType.Text
-                params.repo
-
-        in  List/concatWithEntries
-              [ base, body, draft, prerelease, commitish, owner, repo ]
+        in  utils.List/concatWithEntries
+              [ base
+              , body
+              , convOpt Bool "draft" PT.Boolean params.draft
+              , convOpt Bool "prerelease" PT.Boolean params.prerelease
+              , convOpt Text "commitish" PT.Text params.commitish
+              , convOpt Text "owner" PT.Text params.owner
+              , convOpt Text "repo" PT.Text params.repo
+              ]
 
 let createReleaseStep =
       λ(params : CreateReleaseParams.Type) →
@@ -188,4 +127,5 @@ in  { CheckoutParams
     , CreateReleaseParams
     , CreateReleaseBody
     , createReleaseStep
+    , setup-python = ./ProvidedSteps/setup-python.dhall
     }
