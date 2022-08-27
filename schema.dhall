@@ -27,7 +27,7 @@ let Step =
         , working-directory = None Text
         , uses = None Text
         , env = None (Map Text Text)
-        , `with` = None (Map Text Text)
+        , `with` = None (Map Text WithParameterType)
         , shell = None Shell
         }
     }
