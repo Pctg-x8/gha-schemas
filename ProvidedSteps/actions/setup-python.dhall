@@ -1,6 +1,6 @@
-let GithubActions = ../schema.dhall
+let GithubActions = ../../schema.dhall
 
-let utils = ../utils.dhall
+let utils = ../../utils.dhall
 
 let convOpt = utils.convOpt
 

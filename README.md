@@ -1,5 +1,4 @@
-Unofficial Dhall Schema for GitHub Actions
----
+## Unofficial Dhall Schema for GitHub Actions
 
 https://docs.github.com/ja/free-pro-team@latest/actions
 
@@ -12,7 +11,8 @@ let GitHubActions = https://raw.githubusercontent.com/Pctg-x8/gha-schemas/master
 ### ProvidedSteps
 
 ```dhall
-let ProvidedSteps = https://raw.githubusercontent.com/Pctg-x8/gha-schemas/master/ProvidedSteps.dhall
+-- ex. using actions/checkout step
+let ProvidedSteps/actions/checkout = https://raw.githubusercontent.com/Pctg-x8/gha-schemas/master/ProvidedSteps/actions/checkout.dhall
 ```
 
 #### checkout@v2
