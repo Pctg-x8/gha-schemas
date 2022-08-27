@@ -15,6 +15,22 @@ let List/optionalize =
       λ(list : List a) →
         if List/null a list then None (List a) else Some list
 
+let List/concatWithEntries =
+      List/concat (Map/Entry Text GithubActions.WithParameterType)
+
+let emptyEntry = [] : List (Map/Entry Text GithubActions.WithParameterType)
+
+let convOpt =
+      λ(a : Type) →
+      λ(name : Text) →
+      λ(f : a → GithubActions.WithParameterType) →
+      λ(v : Optional a) →
+        merge
+          { Some = λ(x : a) → [ { mapKey = name, mapValue = f x } ]
+          , None = emptyEntry
+          }
+          v
+
 let CheckoutParams = { Type = { ref : Optional Text }, default.ref = None Text }
 
 let checkoutStep =
@@ -25,15 +41,10 @@ let checkoutStep =
         , `with` =
             List/optionalize
               { mapKey : Text, mapValue : GithubActions.WithParameterType }
-              ( merge
-                  { Some =
-                      λ(x : Text) →
-                        [ { mapKey = "ref"
-                          , mapValue = GithubActions.WithParameterType.Text x
-                          }
-                        ]
-                  , None = [] : Map Text GithubActions.WithParameterType
-                  }
+              ( convOpt
+                  Text
+                  "ref"
+                  GithubActions.WithParameterType.Text
                   params.ref
               )
         }
@@ -62,14 +73,9 @@ let makeDownloadArtifactParams =
         let base = toMap { name = GithubActions.WithParameterType.Text p.name }
 
         let opt_path =
-              Opt/fold
-                Text
-                p.path
-                (List (Map/Entry Text GithubActions.WithParameterType))
-                (λ(p : Text) → [ { mapKey = "path", mapValue = GithubActions.WithParameterType.Text p } ])
-                ([] : List (Map/Entry Text GithubActions.WithParameterType))
+              convOpt Text "path" GithubActions.WithParameterType.Text p.path
 
-        in  List/concat (Map/Entry Text GithubActions.WithParameterType) [ base, opt_path ]
+        in  List/concatWithEntries [ base, opt_path ]
 
 let downloadArtifactStep =
       λ(params : DownloadArtifactParams.Type) →
@@ -79,10 +85,103 @@ let downloadArtifactStep =
         , `with` = Some (makeDownloadArtifactParams params)
         }
 
+let CreateReleaseBody = < Text : Text | Path : Text >
+
+let CreateReleaseParams =
+      { Type =
+          { tag_name : Text
+          , release_name : Text
+          , body : CreateReleaseBody
+          , draft : Optional Bool
+          , prerelease : Optional Bool
+          , commitish : Optional Text
+          , owner : Optional Text
+          , repo : Optional Text
+          }
+      , default =
+        { draft = None Bool
+        , prerelease = None Bool
+        , commitish = None Text
+        , owner = None Text
+        , repo = None Text
+        }
+      }
+
+let mkCreateReleaseParamMap =
+      λ(params : CreateReleaseParams.Type) →
+        let base =
+              toMap
+                { tag_name =
+                    GithubActions.WithParameterType.Text params.tag_name
+                , release_name =
+                    GithubActions.WithParameterType.Text params.release_name
+                }
+
+        let body =
+              merge
+                { Text =
+                    λ(text : Text) →
+                      toMap { body = GithubActions.WithParameterType.Text text }
+                , Path =
+                    λ(path : Text) →
+                      toMap
+                        { body_path = GithubActions.WithParameterType.Text path
+                        }
+                }
+                params.body
+
+        let draft =
+              convOpt
+                Bool
+                "draft"
+                GithubActions.WithParameterType.Boolean
+                params.draft
+
+        let prerelease =
+              convOpt
+                Bool
+                "prerelease"
+                GithubActions.WithParameterType.Boolean
+                params.prerelease
+
+        let commitish =
+              convOpt
+                Text
+                "commitish"
+                GithubActions.WithParameterType.Text
+                params.commitish
+
+        let owner =
+              convOpt
+                Text
+                "owner"
+                GithubActions.WithParameterType.Text
+                params.owner
+
+        let repo =
+              convOpt
+                Text
+                "repo"
+                GithubActions.WithParameterType.Text
+                params.repo
+
+        in  List/concatWithEntries
+              [ base, body, draft, prerelease, commitish, owner, repo ]
+
+let createReleaseStep =
+      λ(params : CreateReleaseParams.Type) →
+        GithubActions.Step::{
+        , name = "Create a Release"
+        , uses = Some "actions/create-release@v1"
+        , `with` = Some (mkCreateReleaseParamMap params)
+        }
+
 in  { CheckoutParams
     , checkoutStep
     , UploadArtifactParams
     , uploadArtifactStep
     , DownloadArtifactParams
     , downloadArtifactStep
+    , CreateReleaseParams
+    , createReleaseStep
     }
