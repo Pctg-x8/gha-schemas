@@ -97,6 +97,7 @@ let CreateReleaseParams =
           , commitish : Optional Text
           , owner : Optional Text
           , repo : Optional Text
+          , token : Text
           }
       , default =
         { draft = None Bool
@@ -104,6 +105,7 @@ let CreateReleaseParams =
         , commitish = None Text
         , owner = None Text
         , repo = None Text
+        , token = GithubActions.mkExpression "github.token"
         }
       }
 
@@ -174,6 +176,7 @@ let createReleaseStep =
         , name = "Create a Release"
         , uses = Some "actions/create-release@v1"
         , `with` = Some (mkCreateReleaseParamMap params)
+        , env = Some (toMap { GITHUB_TOKEN = params.token })
         }
 
 in  { CheckoutParams
