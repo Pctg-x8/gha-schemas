@@ -89,6 +89,7 @@ let Job =
         , steps : List Step.Type
         , permissions: Optional (Map Text Text)
         , services : Optional (Map Text Service.Type)
+        , environment : Optional Text
         }
     , default =
         { name = None Text
@@ -98,6 +99,7 @@ let Job =
         , `if` = None Text
         , permissions = None (Map Text Text)
         , services = None (Map Text Service.Type)
+        , environment = None Text
         }
     }
 
