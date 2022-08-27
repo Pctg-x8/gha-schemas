@@ -183,5 +183,6 @@ in  { CheckoutParams
     , DownloadArtifactParams
     , downloadArtifactStep
     , CreateReleaseParams
+    , CreateReleaseBody
     , createReleaseStep
     }
