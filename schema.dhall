@@ -113,8 +113,12 @@ let Triggers = ./Triggers.dhall
 
 let Workflow =
       { Type =
-          { name : Optional Text, on : Triggers.On, jobs : Map Text Job.Type }
-      , default.name = None Text
+          { name : Optional Text
+          , on : Triggers.On
+          , jobs : Map Text Job.Type
+          , permissions : Optional (Map Text Text)
+          }
+      , default = { name = None Text, permissions = None (Map Text Text) }
       }
 
 in      { Workflow
