@@ -17,4 +17,15 @@ let step =
               (utils.convOpt Text "ref" PT.Text params.ref)
         }
 
-in  { Params, step }
+let stepv3 =
+      λ(params : Params.Type) →
+        GithubActions.Step::{
+        , name = "Checking out"
+        , uses = Some "actions/checkout@v3"
+        , `with` =
+            utils.List/optionalize
+              { mapKey : Text, mapValue : PT }
+              (utils.convOpt Text "ref" PT.Text params.ref)
+        }
+
+in  { Params, step, stepv3 }
