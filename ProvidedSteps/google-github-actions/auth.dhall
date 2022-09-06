@@ -9,6 +9,8 @@ let PT = GithubActions.WithParameterType
 
 let utils = ../../utils.dhall
 
+let defOutput = utils.defOutput
+
 let Params =
       { Type =
           { projectID : Optional Text
@@ -51,11 +53,6 @@ let Params =
         , idTokenIncludeEmail = None Bool
         }
       }
-
-let defOutput =
-      λ(name : Text) →
-      λ(stepId : Text) →
-        GithubActions.mkRefStepOutputExpression stepId name
 
 let outputs =
       { projectID = defOutput "project_id"

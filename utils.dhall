@@ -29,4 +29,9 @@ let convOpt =
           }
           v
 
-in  { List/optionalize, List/concatWithEntries, emptyEntry, convOpt }
+let defOutput =
+      λ(name : Text) →
+      λ(stepId : Text) →
+        GithubActions.mkRefStepOutputExpression stepId name
+
+in  { List/optionalize, List/concatWithEntries, emptyEntry, convOpt, defOutput }
