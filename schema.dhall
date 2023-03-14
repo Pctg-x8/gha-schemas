@@ -145,5 +145,6 @@ in    { Workflow
       , mkExpression
       , mkRefStepOutputExpression
       , WithParameterType
+      , ConcurrencyGroup
       }
     ∧ Triggers
