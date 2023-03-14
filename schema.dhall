@@ -2,37 +2,42 @@ let Map = https://prelude.dhall-lang.org/Map/Type
 
 let id = https://prelude.dhall-lang.org/Function/identity
 
-let mkExpression = \(x : Text) -> "\${{ ${x} }}"
+let mkExpression = λ(x : Text) → "\${{ ${x} }}"
 
 let mkRefStepOutputExpression =
-      \(step : Text) ->
-      \(var : Text) ->
+      λ(step : Text) →
+      λ(var : Text) →
         mkExpression "steps.${step}.outputs.${var}"
 
 let Shell = < bash | pwsh | python | sh | cmd | powershell | Custom : Text >
 
 let WithParameterType = < Number : Natural | Text : Text | Boolean : Bool >
 
+let ConcurrencyGroup =
+      { Type = { group : Text, cancel-in-progress : Optional Bool }
+      , default.cancel-in-progress = None Bool
+      }
+
 let Step =
       { Type =
           { name : Text
           , id : Optional Text
-          , `if` : Optional Text
+          , if : Optional Text
           , run : Optional Text
           , working-directory : Optional Text
           , uses : Optional Text
           , env : Optional (Map Text Text)
-          , `with` : Optional (Map Text WithParameterType)
+          , with : Optional (Map Text WithParameterType)
           , shell : Optional Shell
           }
       , default =
         { id = None Text
-        , `if` = None Text
+        , if = None Text
         , run = None Text
         , working-directory = None Text
         , uses = None Text
         , env = None (Map Text Text)
-        , `with` = None (Map Text WithParameterType)
+        , with = None (Map Text WithParameterType)
         , shell = None Shell
         }
       }
@@ -48,7 +53,7 @@ let runnerPlatformAsText =
             , Custom = id Text
             }
 
-      in  \(p : RunnerPlatform) -> merge handler p
+      in  λ(p : RunnerPlatform) → merge handler p
 
 let Strategy =
       { Type =
@@ -90,22 +95,24 @@ let Job =
           , runs-on : RunnerPlatform
           , strategy : Optional Strategy.Type
           , needs : Optional (List Text)
-          , `if` : Optional Text
+          , if : Optional Text
           , outputs : Optional (Map Text Text)
           , steps : List Step.Type
           , permissions : Optional (Map Text Text)
           , services : Optional (Map Text Service.Type)
           , environment : Optional Text
+          , concurrency : Optional ConcurrencyGroup.Type
           }
       , default =
         { name = None Text
         , outputs = None (Map Text Text)
         , strategy = None Strategy.Type
         , needs = None (List Text)
-        , `if` = None Text
+        , if = None Text
         , permissions = None (Map Text Text)
         , services = None (Map Text Service.Type)
         , environment = None Text
+        , concurrency = None ConcurrencyGroup.Type
         }
       }
 
@@ -117,21 +124,26 @@ let Workflow =
           , on : Triggers.On
           , jobs : Map Text Job.Type
           , permissions : Optional (Map Text Text)
+          , concurrency : Optional ConcurrencyGroup.Type
           }
-      , default = { name = None Text, permissions = None (Map Text Text) }
+      , default =
+        { name = None Text
+        , permissions = None (Map Text Text)
+        , concurrency = None ConcurrencyGroup.Type
+        }
       }
 
-in      { Workflow
-        , Job
-        , RunnerPlatform
-        , runnerPlatformAsText
-        , Strategy
-        , Step
-        , Shell
-        , Service
-        , DockerHubCredentials
-        , mkExpression
-        , mkRefStepOutputExpression
-        , WithParameterType
-        }
-    /\  Triggers
+in    { Workflow
+      , Job
+      , RunnerPlatform
+      , runnerPlatformAsText
+      , Strategy
+      , Step
+      , Shell
+      , Service
+      , DockerHubCredentials
+      , mkExpression
+      , mkRefStepOutputExpression
+      , WithParameterType
+      }
+    ∧ Triggers
