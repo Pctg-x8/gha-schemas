@@ -22,22 +22,22 @@ let Step =
       { Type =
           { name : Text
           , id : Optional Text
-          , if : Optional Text
+          , `if` : Optional Text
           , run : Optional Text
           , working-directory : Optional Text
           , uses : Optional Text
           , env : Optional (Map Text Text)
-          , with : Optional (Map Text WithParameterType)
+          , `with` : Optional (Map Text WithParameterType)
           , shell : Optional Shell
           }
       , default =
         { id = None Text
-        , if = None Text
+        , `if` = None Text
         , run = None Text
         , working-directory = None Text
         , uses = None Text
         , env = None (Map Text Text)
-        , with = None (Map Text WithParameterType)
+        , `with` = None (Map Text WithParameterType)
         , shell = None Shell
         }
       }
@@ -95,7 +95,7 @@ let Job =
           , runs-on : RunnerPlatform
           , strategy : Optional Strategy.Type
           , needs : Optional (List Text)
-          , if : Optional Text
+          , `if` : Optional Text
           , outputs : Optional (Map Text Text)
           , steps : List Step.Type
           , permissions : Optional (Map Text Text)
@@ -108,7 +108,7 @@ let Job =
         , outputs = None (Map Text Text)
         , strategy = None Strategy.Type
         , needs = None (List Text)
-        , if = None Text
+        , `if` = None Text
         , permissions = None (Map Text Text)
         , services = None (Map Text Service.Type)
         , environment = None Text
